@@ -2,37 +2,116 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Splitter Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lite Image Splitter</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        :root { --primary: #007AFF; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .app-container { width: 100%; max-width: 450px; }
-        .section { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        h1 { font-size: 1.2rem; text-align: center; margin: 10px 0 20px; }
-        label { display: block; font-size: 0.8rem; color: #8E8E93; margin-bottom: 8px; }
-        input[type="range"] { width: 100%; margin: 15px 0; accent-color: var(--primary); }
-        .name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #D1D1D6; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box; }
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
-        canvas { width: 100%; border-radius: 4px; border: 1px solid #E5E5EA; aspect-ratio: 1 / 1; background: #eee; }
-        .btn { display: block; width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
-        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-top: 10px; }
+        :root {
+            --primary: #007AFF;
+            --bg: #F2F2F7;
+            --card: #FFFFFF;
+            --text: #1C1C1E;
+            --border: #D1D1D6;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .app-container { width: 100%; max-width: 480px; }
+        h1 { font-size: 1.3rem; font-weight: 700; text-align: center; margin: 15px 0; }
+
+        .section {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        label { display: block; font-size: 0.8rem; color: #8E8E93; margin-bottom: 8px; font-weight: 600; }
+        
+        input[type="file"] { width: 100%; margin-bottom: 5px; }
+        input[type="range"] { width: 100%; height: 36px; accent-color: var(--primary); }
+        
+        .row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+
+        .name-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: #FAFAFA;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            background: #E5E5EA;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        canvas {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #FFF;
+            border-radius: 6px;
+            display: block;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+
+        .info-text { font-size: 0.75rem; color: #8E8E93; text-align: center; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <h1>Image Splitter</h1>
+    <h1>Split & Compress</h1>
 
     <div class="section">
-        <label>① 画像を選択</label>
+        <label>1. 画像を選択</label>
         <input type="file" id="upload" accept="image/*">
-        
-        <label style="margin-top:20px;">② 各パネルの縮尺 (中心維持): <span id="percent-val">100</span>%</label>
+
+        <div class="row" style="margin-top:20px;">
+            <label>2. パネル内ズーム: <span id="percent-val" style="color:var(--primary)">100</span>%</label>
+        </div>
         <input type="range" id="percent" min="10" max="200" value="100">
+
+        <div class="row">
+            <label>3. 保存品質 (JPEG): <span id="quality-val" style="color:var(--primary)">0.8</span></label>
+        </div>
+        <input type="range" id="quality" min="0.1" max="1.0" step="0.1" value="0.8">
 
         <div class="checkbox-group">
             <input type="checkbox" id="square-crop" checked>
@@ -41,7 +120,7 @@
     </div>
 
     <div class="section">
-        <label>③ 分割プレビュー & ファイル名</label>
+        <label>4. 各ファイル名 & プレビュー</label>
         <div class="name-grid">
             <input type="text" id="name1" value="picture01">
             <input type="text" id="name2" value="picture02">
@@ -57,19 +136,23 @@
         </div>
     </div>
 
-    <button class="btn" id="download-zip">ZIPで一括保存</button>
+    <button class="btn" id="download-zip">軽量化ZIPを保存</button>
+    <p class="info-text">※JPEG変換によりファイルサイズを大幅に削減します</p>
 </div>
 
 <script>
     const upload = document.getElementById('upload');
     const percentInput = document.getElementById('percent');
     const percentVal = document.getElementById('percent-val');
+    const qualityInput = document.getElementById('quality');
+    const qualityVal = document.getElementById('quality-val');
     const squareCrop = document.getElementById('square-crop');
     const downloadBtn = document.getElementById('download-zip');
     const canvases = [1,2,3,4].map(i => document.getElementById(`canvas${i}`));
 
     let currentImg = null;
 
+    // イベントリスナー
     upload.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -82,16 +165,17 @@
         reader.readAsDataURL(file);
     });
 
-    [percentInput, squareCrop].forEach(el => el.addEventListener('input', () => {
+    [percentInput, qualityInput, squareCrop].forEach(el => el.addEventListener('input', () => {
         percentVal.innerText = percentInput.value;
+        qualityVal.innerText = qualityInput.value;
         if (currentImg) processImage();
     }));
 
+    // 画像処理コアロジック
     function processImage() {
         if (!currentImg) return;
 
-        // ズーム倍率（逆数にして切り取り範囲を制御）
-        // 100%のとき、元の1/2の範囲を映す。数値が大きいほどズームイン（切り取り範囲が狭まる）
+        // ズームScale計算 (100%が標準)
         const zoomScale = 100 / percentInput.value; 
         
         let sw = currentImg.width;
@@ -99,7 +183,6 @@
         let sx0 = 0;
         let sy0 = 0;
 
-        // 正方形クロップ（元画像の中央正方形をベースにする）
         if (squareCrop.checked) {
             const size = Math.min(sw, sh);
             sx0 = (sw - size) / 2;
@@ -108,50 +191,60 @@
             sh = size;
         }
 
-        // 分割後の各1パネルが「本来カバーすべき」元画像の幅と高さ
         const basePanelW = sw / 2;
         const basePanelH = sh / 2;
 
         canvases.forEach((canvas, i) => {
             const ctx = canvas.getContext('2d');
-            // 高画質維持のため、出力サイズは大きめに設定
-            canvas.width = 1000;
-            canvas.height = 1000;
+            
+            // 出力解像度の設定（元画像の半分にすることで無駄な肥大化を防止）
+            const outSize = Math.min(sw / 2, 1200); 
+            canvas.width = outSize;
+            canvas.height = outSize;
 
             const col = i % 2;
             const row = Math.floor(i / 2);
 
-            // 各パネルの「中心点」を計算
+            // 各パネルの「中心点」を基準にする
             const centerX = sx0 + (col * basePanelW) + (basePanelW / 2);
             const centerY = sy0 + (row * basePanelH) + (basePanelH / 2);
 
-            // ズーム率に応じた切り取りサイズ
             const cropW = basePanelW * zoomScale;
             const cropH = basePanelH * zoomScale;
 
-            // 中心を維持した切り出し開始座標
             const sx = centerX - (cropW / 2);
             const sy = centerY - (cropH / 2);
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 背景を白で塗りつぶし（JPEGの透過対策）
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
             ctx.drawImage(currentImg, sx, sy, cropW, cropH, 0, 0, canvas.width, canvas.height);
         });
     }
 
+    // ZIPダウンロード処理
     downloadBtn.addEventListener('click', () => {
         if (!currentImg) return alert("画像を選択してください");
+        
         const zip = new JSZip();
+        const quality = parseFloat(qualityInput.value);
+
         const promises = canvases.map((canvas, i) => {
             return new Promise(resolve => {
                 const name = document.getElementById(`name${i+1}`).value || `pic_${i+1}`;
+                // JPEG形式で品質を指定してBlob作成
                 canvas.toBlob(blob => {
-                    zip.file(name + ".png", blob);
+                    zip.file(name + ".jpg", blob);
                     resolve();
-                }, "image/png");
+                }, "image/jpeg", quality);
             });
         });
+
         Promise.all(promises).then(() => {
-            zip.generateAsync({type: "blob"}).then(c => saveAs(c, "split_images.zip"));
+            zip.generateAsync({type: "blob"}).then(content => {
+                saveAs(content, "split_images_lite.zip");
+            });
         });
     });
 </script>
