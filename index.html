@@ -3,100 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Splitter Mobile</title>
+    <title>Image Splitter Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        :root {
-            --primary: #007AFF;
-            --bg: #F2F2F7;
-            --card: #FFFFFF;
-            --text: #1C1C1E;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .app-container {
-            width: 100%;
-            max-width: 500px;
-        }
-        h1 { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 24px; }
-
-        /* カードスタイル */
-        .section {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        /* 入力エリア */
-        .input-group { margin-bottom: 16px; }
-        label { display: block; font-size: 0.85rem; color: #8E8E93; margin-bottom: 8px; }
-        
-        input[type="file"] { width: 100%; font-size: 0.9rem; }
-        input[type="range"] { width: 100%; height: 30px; margin: 10px 0; }
-        
-        .name-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #D1D1D6;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-        }
-
-        /* プレビューグリッド */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        canvas {
-            width: 100%;
-            border-radius: 8px;
-            border: 1px solid #E5E5EA;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-        }
-
-        /* ボタン */
-        .btn {
-            display: block;
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: opacity 0.2s;
-        }
-        .btn:active { opacity: 0.7; }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-        }
+        :root { --primary: #007AFF; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .app-container { width: 100%; max-width: 450px; }
+        .section { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        h1 { font-size: 1.2rem; text-align: center; margin: 10px 0 20px; }
+        label { display: block; font-size: 0.8rem; color: #8E8E93; margin-bottom: 8px; }
+        input[type="range"] { width: 100%; margin: 15px 0; accent-color: var(--primary); }
+        .name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #D1D1D6; border-radius: 8px; font-size: 0.85rem; box-sizing: border-box; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+        canvas { width: 100%; border-radius: 4px; border: 1px solid #E5E5EA; aspect-ratio: 1 / 1; background: #eee; }
+        .btn { display: block; width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -105,29 +28,25 @@
     <h1>Image Splitter</h1>
 
     <div class="section">
-        <div class="input-group">
-            <label>画像の選択</label>
-            <input type="file" id="upload" accept="image/*">
-        </div>
-
-        <div class="input-group">
-            <label>各パネルのズーム倍率: <span id="percent-val">100</span>%</label>
-            <input type="range" id="percent" min="10" max="100" value="100">
-        </div>
+        <label>① 画像を選択</label>
+        <input type="file" id="upload" accept="image/*">
+        
+        <label style="margin-top:20px;">② 各パネルの縮尺 (中心維持): <span id="percent-val">100</span>%</label>
+        <input type="range" id="percent" min="10" max="200" value="100">
 
         <div class="checkbox-group">
             <input type="checkbox" id="square-crop" checked>
-            <label for="square-crop">元画像を正方形にフィット</label>
+            <label for="square-crop">元画像を正方形として扱う</label>
         </div>
     </div>
 
     <div class="section">
-        <label>保存ファイル名</label>
+        <label>③ 分割プレビュー & ファイル名</label>
         <div class="name-grid">
-            <input type="text" id="name1" value="pic_01">
-            <input type="text" id="name2" value="pic_02">
-            <input type="text" id="name3" value="pic_03">
-            <input type="text" id="name4" value="pic_04">
+            <input type="text" id="name1" value="picture01">
+            <input type="text" id="name2" value="picture02">
+            <input type="text" id="name3" value="picture03">
+            <input type="text" id="name4" value="picture04">
         </div>
         
         <div class="grid-container">
@@ -138,7 +57,7 @@
         </div>
     </div>
 
-    <button class="btn" id="download-zip">ZIPでまとめて保存</button>
+    <button class="btn" id="download-zip">ZIPで一括保存</button>
 </div>
 
 <script>
@@ -147,13 +66,7 @@
     const percentVal = document.getElementById('percent-val');
     const squareCrop = document.getElementById('square-crop');
     const downloadBtn = document.getElementById('download-zip');
-    
-    const canvases = [
-        document.getElementById('canvas1'),
-        document.getElementById('canvas2'),
-        document.getElementById('canvas3'),
-        document.getElementById('canvas4')
-    ];
+    const canvases = [1,2,3,4].map(i => document.getElementById(`canvas${i}`));
 
     let currentImg = null;
 
@@ -161,13 +74,10 @@
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = (ev) => {
             const img = new Image();
-            img.onload = () => {
-                currentImg = img;
-                processImage();
-            };
-            img.src = event.target.result;
+            img.onload = () => { currentImg = img; processImage(); };
+            img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
     });
@@ -180,45 +90,48 @@
     function processImage() {
         if (!currentImg) return;
 
-        const zoom = percentInput.value / 100;
-        let baseW = currentImg.width;
-        let baseH = currentImg.height;
-        let offsetX = 0;
-        let offsetY = 0;
+        // ズーム倍率（逆数にして切り取り範囲を制御）
+        // 100%のとき、元の1/2の範囲を映す。数値が大きいほどズームイン（切り取り範囲が狭まる）
+        const zoomScale = 100 / percentInput.value; 
+        
+        let sw = currentImg.width;
+        let sh = currentImg.height;
+        let sx0 = 0;
+        let sy0 = 0;
 
-        // 正方形にフィットさせる
+        // 正方形クロップ（元画像の中央正方形をベースにする）
         if (squareCrop.checked) {
-            const size = Math.min(baseW, baseH);
-            offsetX = (baseW - size) / 2;
-            offsetY = (baseH - size) / 2;
-            baseW = size;
-            baseH = size;
+            const size = Math.min(sw, sh);
+            sx0 = (sw - size) / 2;
+            sy0 = (sh - size) / 2;
+            sw = size;
+            sh = size;
         }
 
-        const panelW = baseW / 2;
-        const panelH = baseH / 2;
+        // 分割後の各1パネルが「本来カバーすべき」元画像の幅と高さ
+        const basePanelW = sw / 2;
+        const basePanelH = sh / 2;
 
-        canvases.forEach((canvas, index) => {
+        canvases.forEach((canvas, i) => {
             const ctx = canvas.getContext('2d');
-            
-            // 出力サイズ
-            canvas.width = 1000; // 高解像度で出力
+            // 高画質維持のため、出力サイズは大きめに設定
+            canvas.width = 1000;
             canvas.height = 1000;
 
-            const col = index % 2;
-            const row = Math.floor(index / 2);
+            const col = i % 2;
+            const row = Math.floor(i / 2);
 
-            // 各パネルの本来の中心座標
-            const panelCenterX = offsetX + (col * panelW) + (panelW / 2);
-            const panelCenterY = offsetY + (row * panelH) + (panelH / 2);
+            // 各パネルの「中心点」を計算
+            const centerX = sx0 + (col * basePanelW) + (basePanelW / 2);
+            const centerY = sy0 + (row * basePanelH) + (basePanelH / 2);
 
-            // ズーム適用後の切り取りサイズ
-            const cropW = panelW * zoom;
-            const cropH = panelH * zoom;
+            // ズーム率に応じた切り取りサイズ
+            const cropW = basePanelW * zoomScale;
+            const cropH = basePanelH * zoomScale;
 
-            // 中心を基準に切り取り開始位置を計算
-            const sx = panelCenterX - (cropW / 2);
-            const sy = panelCenterY - (cropH / 2);
+            // 中心を維持した切り出し開始座標
+            const sx = centerX - (cropW / 2);
+            const sy = centerY - (cropH / 2);
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(currentImg, sx, sy, cropW, cropH, 0, 0, canvas.width, canvas.height);
@@ -227,7 +140,6 @@
 
     downloadBtn.addEventListener('click', () => {
         if (!currentImg) return alert("画像を選択してください");
-
         const zip = new JSZip();
         const promises = canvases.map((canvas, i) => {
             return new Promise(resolve => {
@@ -238,11 +150,8 @@
                 }, "image/png");
             });
         });
-
         Promise.all(promises).then(() => {
-            zip.generateAsync({type: "blob"}).then(content => {
-                saveAs(content, "split_images.zip");
-            });
+            zip.generateAsync({type: "blob"}).then(c => saveAs(c, "split_images.zip"));
         });
     });
 </script>
