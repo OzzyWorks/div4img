@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Quad Splitter Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 20px; background: #eef2f3; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .controls { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 30px; padding: 20px; background: #fafafa; border-radius: 8px; border: 1px solid #ddd; }
+        .control-group { display: flex; flex-direction: column; align-items: flex-start; }
+        .filenames { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        canvas { width: 100%; height: auto; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 120px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>画像4分割 & クロップツール</h2>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>① 画像選択</label>
+            <input type="file" id="upload" accept="image/*">
+        </div>
+        <div class="control-group">
+            <label>② 切り抜き範囲: <span id="percent-val">100</span>%</label>
+            <input type="range" id="percent" min="10" max="100" value="100">
+        </div>
+        <div class="control-group" style="flex-direction: row; align-items: center; gap: 5px;">
+            <input type="checkbox" id="square-crop">
+            <label for="square-crop">正方形にクロップ</label>
+        </div>
+    </div>
+
+    <div class="filenames">
+        <div>左上名: <input type="text" id="name1" value="picture01"></div>
+        <div>右上名: <input type="text" id="name2" value="picture02"></div>
+        <div>左下名: <input type="text" id="name3" value="picture03"></div>
+        <div>右下名: <input type="text" id="name4" value="picture04"></div>
+    </div>
+
+    <div class="grid-container">
+        <canvas id="canvas1"></canvas>
+        <canvas id="canvas2"></canvas>
+        <canvas id="canvas3"></canvas>
+        <canvas id="canvas4"></canvas>
+    </div>
+
+    <button id="download-zip">分割画像をZIPで保存</button>
+</div>
+
+<script>
+    const upload = document.getElementById('upload');
+    const percentInput = document.getElementById('percent');
+    const percentVal = document.getElementById('percent-val');
+    const squareCrop = document.getElementById('square-crop');
+    const downloadBtn = document.getElementById('download-zip');
+    
+    const canvases = [
+        document.getElementById('canvas1'),
+        document.getElementById('canvas2'),
+        document.getElementById('canvas3'),
+        document.getElementById('canvas4')
+    ];
+
+    let currentImg = null;
+
+    upload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                currentImg = img;
+                processImage();
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    [percentInput, squareCrop].forEach(el => el.addEventListener('input', () => {
+        percentVal.innerText = percentInput.value;
+        if (currentImg) processImage();
+    }));
+
+    function processImage() {
+        if (!currentImg) return;
+
+        const pct = percentInput.value / 100;
+        let sourceW = currentImg.width;
+        let sourceH = currentImg.height;
+        let startX = 0;
+        let startY = 0;
+
+        // 正方形クロップ機能
+        if (squareCrop.checked) {
+            const minSide = Math.min(sourceW, sourceH);
+            startX = (sourceW - minSide) / 2;
+            startY = (sourceH - minSide) / 2;
+            sourceW = minSide;
+            sourceH = minSide;
+        }
+
+        // 指定パーセントに基づく範囲計算（中心基準）
+        const cropW = sourceW * pct;
+        const cropH = sourceH * pct;
+        const finalStartX = startX + (sourceW - cropW) / 2;
+        const finalStartY = startY + (sourceH - cropH) / 2;
+
+        const halfW = cropW / 2;
+        const halfH = cropH / 2;
+
+        canvases.forEach((canvas, index) => {
+            const ctx = canvas.getContext('2d');
+            canvas.width = halfW;
+            canvas.height = halfH;
+
+            const col = index % 2;
+            const row = Math.floor(index / 2);
+
+            const sx = finalStartX + (col * halfW);
+            const sy = finalStartY + (row * halfH);
+
+            ctx.drawImage(currentImg, sx, sy, halfW, halfH, 0, 0, halfW, halfH);
+        });
+    }
+
+    downloadBtn.addEventListener('click', () => {
+        if (!currentImg) {
+            alert("画像を選択してください");
+            return;
+        }
+
+        const zip = new JSZip();
+        const promises = canvases.map((canvas, i) => {
+            return new Promise(resolve => {
+                const fileName = document.getElementById(`name${i+1}`).value || `picture0${i+1}`;
+                canvas.toBlob(blob => {
+                    zip.file(fileName + ".png", blob);
+                    resolve();
+                }, "image/png");
+            });
+        });
+
+        Promise.all(promises).then(() => {
+            zip.generateAsync({type: "blob"}).then(content => {
+                saveAs(content, "split_images.zip");
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
